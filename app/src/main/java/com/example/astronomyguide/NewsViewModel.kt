@@ -1,30 +1,42 @@
 package com.example.astronomyguide
 
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.viewModelScope
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
+import com.example.astronomyguide.data.LikesRepository
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-class NewsViewModel : ViewModel() {
+class NewsViewModel(application: Application) : AndroidViewModel(application) {
     private val allNews = NewsData.newsList
     val displayedNews = mutableStateListOf<NewsItem>()
     val isNewsUpdateEnabled = mutableStateOf(true)
 
+    // Создаем репозиторий
+    private val repository = LikesRepository(application)
+
     init {
-        updateDisplayedNews()
-        startNewsRotation()
+        // Запускаем инициализацию
+        viewModelScope.launch {
+            initializeDisplayedNews()
+            startNewsRotation()
+        }
     }
 
-    private fun updateDisplayedNews() {
+    private suspend fun initializeDisplayedNews() {
         displayedNews.clear()
         repeat(4) {
-            val randomNews = getUniqueRandomNews()
-            // Загружаем сохраненные лайки
-            val savedLikes = NewsState.getLikes(randomNews.id)
-            displayedNews.add(randomNews.copy(likes = savedLikes))
+            addRandomNewsToDisplay()
         }
+    }
+
+    private suspend fun addRandomNewsToDisplay() {
+        val randomNews = getUniqueRandomNews()
+        // Получаем лайки из базы данных
+        val likes = repository.getLikes(randomNews.id)
+        displayedNews.add(randomNews.copy(likes = likes))
     }
 
     private fun getUniqueRandomNews(excludeIds: List<Int> = displayedNews.map { it.id }): NewsItem {
@@ -43,33 +55,37 @@ class NewsViewModel : ViewModel() {
         }
     }
 
-    private fun replaceRandomNews() {
+    private suspend fun replaceRandomNews() {
         val randomIndex = (0 until 4).random()
         val currentNews = displayedNews[randomIndex]
 
-        // Сохраняем текущие лайки перед заменой
-        NewsState.setLikes(currentNews.id, currentNews.likes)
+        // Сохраняем лайки текущей новости в БД
+        if (currentNews.likes > 0) {
+            repository.saveLikes(currentNews.id, currentNews.likes)
+        }
 
         // Получаем новую новость
         val newNews = getUniqueRandomNews(displayedNews.map { it.id })
 
-        // Загружаем сохраненные лайки для новой новости
-        val savedLikes = NewsState.getLikes(newNews.id)
+        // Загружаем лайки из БД
+        val savedLikes = repository.getLikes(newNews.id)
 
         // Обновляем отображение
         displayedNews[randomIndex] = newNews.copy(likes = savedLikes)
     }
 
     fun likeNews(index: Int) {
-        if (index in 0 until displayedNews.size) {
-            val news = displayedNews[index]
-            val newLikes = news.likes + 1
+        viewModelScope.launch {
+            if (index in 0 until displayedNews.size) {
+                val news = displayedNews[index]
+                val newLikes = news.likes + 1
 
-            // Обновляем в отображении
-            displayedNews[index] = news.copy(likes = newLikes)
+                // Сохраняем в БД
+                repository.saveLikes(news.id, newLikes)
 
-            // Сохраняем в хранилище
-            NewsState.setLikes(news.id, newLikes)
+                // Обновляем на экране
+                displayedNews[index] = news.copy(likes = newLikes)
+            }
         }
     }
 
