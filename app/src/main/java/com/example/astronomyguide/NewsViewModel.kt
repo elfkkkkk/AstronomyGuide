@@ -14,7 +14,6 @@ class NewsViewModel(application: Application) : AndroidViewModel(application) {
     val displayedNews = mutableStateListOf<NewsItem>()
     val isNewsUpdateEnabled = mutableStateOf(true)
 
-    // Создаем репозиторий
     private val repository = LikesRepository(application)
 
     init {

@@ -16,9 +16,8 @@ import com.example.astronomyguide.opengl.OpenGLView
 @Composable
 fun SolarSystemScreen() {
     Column(
-        modifier = Modifier.fillMaxSize()  // УБРАЛИ .background(Color.Black)
+        modifier = Modifier.fillMaxSize()
     ) {
-        // Заголовок
         Text(
             text = "Солнечная Система",
             style = MaterialTheme.typography.headlineLarge,
