@@ -17,7 +17,6 @@ class NewsViewModel(application: Application) : AndroidViewModel(application) {
     private val repository = LikesRepository(application)
 
     init {
-        // Запускаем инициализацию
         viewModelScope.launch {
             initializeDisplayedNews()
             startNewsRotation()
@@ -33,7 +32,7 @@ class NewsViewModel(application: Application) : AndroidViewModel(application) {
 
     private suspend fun addRandomNewsToDisplay() {
         val randomNews = getUniqueRandomNews()
-        // Получаем лайки из базы данных
+        // получаем лайки из базы данных
         val likes = repository.getLikes(randomNews.id)
         displayedNews.add(randomNews.copy(likes = likes))
     }
@@ -58,18 +57,18 @@ class NewsViewModel(application: Application) : AndroidViewModel(application) {
         val randomIndex = (0 until 4).random()
         val currentNews = displayedNews[randomIndex]
 
-        // Сохраняем лайки текущей новости в БД
+        // сохраняем лайки текущей новости
         if (currentNews.likes > 0) {
             repository.saveLikes(currentNews.id, currentNews.likes)
         }
 
-        // Получаем новую новость
+        // получаем новую новость
         val newNews = getUniqueRandomNews(displayedNews.map { it.id })
 
-        // Загружаем лайки из БД
+        // загружаем лайки из БД
         val savedLikes = repository.getLikes(newNews.id)
 
-        // Обновляем отображение
+        // обновляем отображение
         displayedNews[randomIndex] = newNews.copy(likes = savedLikes)
     }
 
@@ -79,10 +78,10 @@ class NewsViewModel(application: Application) : AndroidViewModel(application) {
                 val news = displayedNews[index]
                 val newLikes = news.likes + 1
 
-                // Сохраняем в БД
+                // сохраняем в БД
                 repository.saveLikes(news.id, newLikes)
 
-                // Обновляем на экране
+                // обновляем на экране
                 displayedNews[index] = news.copy(likes = newLikes)
             }
         }

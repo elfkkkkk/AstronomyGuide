@@ -47,14 +47,12 @@ class OpenGLRenderer(private val context: Context) : GLSurfaceView.Renderer {
     override fun onDrawFrame(gl: GL10?) {
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT or GLES20.GL_DEPTH_BUFFER_BIT)
 
-        // Анимация вращения куба
+        // анимация вращения куба
         angle += 1f
         if (angle > 360) angle = 0f
 
-        // 1. Рисуем фон ПЕРВЫМ
         drawBackground()
 
-        // 2. Рисуем куб поверх фона
         drawCube()
     }
 
@@ -63,10 +61,9 @@ class OpenGLRenderer(private val context: Context) : GLSurfaceView.Renderer {
 
         Matrix.translateM(modelMatrix, 0, 0f, 0f, 0f)
 
-        // Масштабируем по размерам экрана
         val ratio = 1.0f
-        val scaleX = 10f * ratio  // Горизонтальный масштаб
-        val scaleY = 10f          // Вертикальный масштаб
+        val scaleX = 10f * ratio
+        val scaleY = 10f
         Matrix.scaleM(modelMatrix, 0, scaleX, scaleY, 1f)
 
         square.draw(projectionMatrix, viewMatrix, modelMatrix)
@@ -79,10 +76,8 @@ class OpenGLRenderer(private val context: Context) : GLSurfaceView.Renderer {
         Matrix.rotateM(modelMatrix, 0, angle, 0f, 1f, 0f)
         Matrix.rotateM(modelMatrix, 0, 30f, 1f, 0f, 0f)
 
-        // Куб в центре, ближе к камере чем фон
         Matrix.translateM(modelMatrix, 0, 0f, 0f, 0f)
 
-        // Размер куба
         Matrix.scaleM(modelMatrix, 0, 0.3f, 0.3f, 0.3f)
 
         cube.draw(projectionMatrix, viewMatrix, modelMatrix)

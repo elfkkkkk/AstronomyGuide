@@ -11,7 +11,7 @@ import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.nio.FloatBuffer
 
-class Square(private val context: Context) {  // ← ДОБАВИЛИ КОНТЕКСТ В КОНСТРУКТОР
+class Square(private val context: Context) {
 
     private val vertexShaderCode = """
         attribute vec4 vPosition;
@@ -39,9 +39,8 @@ class Square(private val context: Context) {  // ← ДОБАВИЛИ КОНТЕ
     private var mvpMatrixHandle: Int = 0
     private var textureUniformHandle: Int = 0
 
-    private var textureId: Int = 0  // ID текстуры
+    private var textureId: Int = 0
 
-    // Координаты вершин квадрата
     private val vertices = floatArrayOf(
         -0.5f, -0.5f, 0.0f,
         0.5f, -0.5f, 0.0f,
@@ -49,7 +48,6 @@ class Square(private val context: Context) {  // ← ДОБАВИЛИ КОНТЕ
         0.5f,  0.5f, 0.0f
     )
 
-    // Координаты текстуры
     private val texCoords = floatArrayOf(
         0.0f, 1.0f,
         1.0f, 1.0f,
@@ -74,17 +72,15 @@ class Square(private val context: Context) {  // ← ДОБАВИЛИ КОНТЕ
         texCoordBuffer.put(texCoords)
         texCoordBuffer.position(0)
 
-        // Компиляция шейдеров
         val vertexShader = loadShader(GLES20.GL_VERTEX_SHADER, vertexShaderCode)
         val fragmentShader = loadShader(GLES20.GL_FRAGMENT_SHADER, fragmentShaderCode)
 
-        // Создание программы
         program = GLES20.glCreateProgram()
         GLES20.glAttachShader(program, vertexShader)
         GLES20.glAttachShader(program, fragmentShader)
         GLES20.glLinkProgram(program)
 
-        // Загружаем текстуру
+
         loadTexture()
     }
 
@@ -93,10 +89,8 @@ class Square(private val context: Context) {  // ← ДОБАВИЛИ КОНТЕ
         GLES20.glGenTextures(1, textureHandle, 0)
 
         if (textureHandle[0] != 0) {
-            // Биндим текстуру
             GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureHandle[0])
 
-            // Настраиваем фильтрацию
             GLES20.glTexParameteri(
                 GLES20.GL_TEXTURE_2D,
                 GLES20.GL_TEXTURE_MIN_FILTER,
@@ -108,7 +102,6 @@ class Square(private val context: Context) {  // ← ДОБАВИЛИ КОНТЕ
                 GLES20.GL_LINEAR
             )
 
-            // Настраиваем обертывание текстуры
             GLES20.glTexParameteri(
                 GLES20.GL_TEXTURE_2D,
                 GLES20.GL_TEXTURE_WRAP_S,
@@ -121,34 +114,27 @@ class Square(private val context: Context) {  // ← ДОБАВИЛИ КОНТЕ
             )
 
             try {
-                // Загружаем bitmap из ресурсов
-                // ИСПРАВЬТЕ R.drawable.galaxy_texture на ваше имя файла!
                 val bitmap = BitmapFactory.decodeResource(
                     context.resources,
-                    R.drawable.galaxy_texture  // ← ВАШ ФАЙЛ
+                    R.drawable.galaxy_texture
                 )
 
                 if (bitmap != null) {
-                    // Загружаем bitmap в OpenGL
                     GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, bitmap, 0)
 
-                    // Освобождаем bitmap
                     bitmap.recycle()
 
                     textureId = textureHandle[0]
                 } else {
-                    // Если текстура не загрузилась, создаем простую текстуру
                     createDefaultTexture(textureHandle[0])
                 }
             } catch (e: Exception) {
-                // Если ошибка при загрузке текстуры
                 createDefaultTexture(textureHandle[0])
             }
         }
     }
 
     private fun createDefaultTexture(textureHandle: Int) {
-        // Создаем простую текстуру (черный фон с белыми точками)
         val pixels = IntArray(64 * 64)
         for (i in pixels.indices) {
             if (i % 8 == 0) {
@@ -168,27 +154,22 @@ class Square(private val context: Context) {  // ← ДОБАВИЛИ КОНТЕ
     fun draw(projectionMatrix: FloatArray, viewMatrix: FloatArray, modelMatrix: FloatArray) {
         GLES20.glUseProgram(program)
 
-        // Получаем handle'ы
         positionHandle = GLES20.glGetAttribLocation(program, "vPosition")
         textureHandle = GLES20.glGetAttribLocation(program, "vTexCoord")
         mvpMatrixHandle = GLES20.glGetUniformLocation(program, "uMVPMatrix")
         textureUniformHandle = GLES20.glGetUniformLocation(program, "uTexture")
 
-        // Вычисляем MVP матрицу
         val mvpMatrix = FloatArray(16)
         val viewProjectionMatrix = FloatArray(16)
         Matrix.multiplyMM(viewProjectionMatrix, 0, projectionMatrix, 0, viewMatrix, 0)
         Matrix.multiplyMM(mvpMatrix, 0, viewProjectionMatrix, 0, modelMatrix, 0)
 
-        // Передаем матрицу в шейдер
         GLES20.glUniformMatrix4fv(mvpMatrixHandle, 1, false, mvpMatrix, 0)
 
-        // Устанавливаем текстуру
         GLES20.glActiveTexture(GLES20.GL_TEXTURE0)
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureId)
         GLES20.glUniform1i(textureUniformHandle, 0)
 
-        // Включаем атрибуты
         GLES20.glEnableVertexAttribArray(positionHandle)
         GLES20.glVertexAttribPointer(
             positionHandle, 3,
@@ -203,10 +184,8 @@ class Square(private val context: Context) {  // ← ДОБАВИЛИ КОНТЕ
             2 * 4, texCoordBuffer
         )
 
-        // Рисуем
         GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, 4)
 
-        // Отключаем атрибуты
         GLES20.glDisableVertexAttribArray(positionHandle)
         GLES20.glDisableVertexAttribArray(textureHandle)
     }
