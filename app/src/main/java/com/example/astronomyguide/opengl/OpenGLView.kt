@@ -6,12 +6,15 @@ import android.util.AttributeSet
 
 class OpenGLView(context: Context, attrs: AttributeSet? = null) : GLSurfaceView(context, attrs) {
 
+    val renderer: OpenGLRenderer
+
     init {
         // Настраиваем контекст OpenGL ES 2.0
         setEGLContextClientVersion(2)
 
-        // Создаем рендерер с контекстом
-        setRenderer(OpenGLRenderer(context))
+        // Создаем рендерер
+        renderer = OpenGLRenderer(context)
+        setRenderer(renderer)
 
         // Устанавливаем режим отрисовки
         renderMode = GLSurfaceView.RENDERMODE_CONTINUOUSLY
