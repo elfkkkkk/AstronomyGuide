@@ -125,10 +125,8 @@ object SolarSystemData {
         )
     )
 
-    // Получить Землю для расчета позиции Луны
     val earth = bodies[3]
 
-    // Радиус орбиты Луны относительно Земли
     const val MOON_DISTANCE = 0.4f
     const val MOON_ORBIT_SPEED = 10f
 }

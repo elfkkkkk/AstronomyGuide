@@ -17,10 +17,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.navigation.NavController
 import com.example.astronomyguide.opengl.OpenGLView
 
 @Composable
-fun SolarSystemScreen() {
+fun SolarSystemScreen(navController: NavController) {
     val context = LocalContext.current
     var openGLRenderer by remember { mutableStateOf<com.example.astronomyguide.opengl.OpenGLRenderer?>(null) }
     var planetInfo by remember { mutableStateOf("Солнце\nЗвезда\nДиаметр: 1,391,000 км") }
@@ -49,7 +50,6 @@ fun SolarSystemScreen() {
             AndroidView(
                 factory = { ctx ->
                     OpenGLView(ctx).apply {
-                        // Сохраняем renderer при создании
                         openGLRenderer = this.renderer
                     }
                 },
@@ -85,9 +85,19 @@ fun SolarSystemScreen() {
                 )
             }
 
-            // Информация
+            // проверяем, выбрана ли Луна
             Button(
-                onClick = { showInfoDialog = true },
+                onClick = {
+                    val info = openGLRenderer?.getSelectedPlanetInfo() ?: ""
+                    if (info.contains("Луна")) {
+                        // Если выбрана Луна - переходим на 3D экран
+                        navController.navigate("moon_detail")
+                    } else {
+                        // Иначе показываем обычный диалог
+                        planetInfo = info
+                        showInfoDialog = true
+                    }
+                },
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Color(0xFF9D71D3)
                 ),
@@ -141,7 +151,7 @@ fun SolarSystemScreen() {
         }
     }
 
-    // Диалог с информацией
+    // Диалог с информацией (для всех планет кроме Луны)
     if (showInfoDialog) {
         AlertDialog(
             onDismissRequest = { showInfoDialog = false },
@@ -166,11 +176,6 @@ fun SolarSystemScreen() {
                         lineHeight = 20.sp
                     )
                     Spacer(modifier = Modifier.height(16.dp))
-                    Text(
-                        "Используйте кнопки ← → для переключения",
-                        fontSize = 12.sp,
-                        color = Color.Gray
-                    )
                 }
             },
             confirmButton = {

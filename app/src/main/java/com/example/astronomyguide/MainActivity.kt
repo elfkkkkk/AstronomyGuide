@@ -5,6 +5,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Newspaper
 import androidx.compose.material.icons.filled.Public
 import androidx.compose.material3.*
@@ -53,7 +54,10 @@ fun MainApp() {
                 NewsScreen()
             }
             composable(Screen.SolarSystem.route) {
-                SolarSystemScreen()
+                SolarSystemScreen(navController)  // ← ПЕРЕДАЕМ navController
+            }
+            composable(Screen.MoonDetail.route) {  // ← НОВЫЙ ЭКРАН
+                MoonDetailScreen(navController)
             }
         }
     }
@@ -62,6 +66,7 @@ fun MainApp() {
 sealed class Screen(val route: String, val title: String, val icon: ImageVector) {
     object News : Screen("news", "Новости", Icons.Default.Newspaper)
     object SolarSystem : Screen("solarsystem", "Солнечная система", Icons.Default.Public)
+    object MoonDetail : Screen("moon_detail", "Луна", Icons.Default.Info)  // ← НОВЫЙ
 }
 
 @Composable
@@ -69,6 +74,9 @@ fun BottomNavigationBar(navController: NavHostController) {
     val items = listOf(Screen.News, Screen.SolarSystem)
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
+
+    // Скрываем BottomBar на экране Луны
+    if (currentRoute == Screen.MoonDetail.route) return
 
     NavigationBar(
         containerColor = Color(0xFF4A1E6D),
@@ -91,11 +99,11 @@ fun BottomNavigationBar(navController: NavHostController) {
                     }
                 },
                 colors = NavigationBarItemDefaults.colors(
-                    selectedIconColor = Color(0xFF9D71D3),  // LightPurple
-                    selectedTextColor = Color(0xFF9D71D3),  // LightPurple
-                    unselectedIconColor = Color(0xFFB39DDB),  // AccentPurple
-                    unselectedTextColor = Color(0xFFB39DDB),  // AccentPurple
-                    indicatorColor = Color(0xFF6B3FA0)  // MediumPurple
+                    selectedIconColor = Color(0xFF9D71D3),
+                    selectedTextColor = Color(0xFF9D71D3),
+                    unselectedIconColor = Color(0xFFB39DDB),
+                    unselectedTextColor = Color(0xFFB39DDB),
+                    indicatorColor = Color(0xFF6B3FA0)
                 )
             )
         }

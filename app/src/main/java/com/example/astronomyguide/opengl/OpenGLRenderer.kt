@@ -47,11 +47,8 @@ class OpenGLRenderer(private val context: Context) : GLSurfaceView.Renderer {
 
         val ratio = width.toFloat() / height
 
-        // ============ ИЗМЕНЕНО ============
-        // Приближаем проекцию
         Matrix.frustumM(projectionMatrix, 0, -ratio, ratio, -1f, 1f, 1f, 20f)
 
-        // Камера ближе и выше
         Matrix.setLookAtM(viewMatrix, 0,
             0f, 2f, 6f,     // x, y, z позиция камеры
             0f, 0f, 0f,     // точка, куда смотрим
@@ -160,10 +157,10 @@ class OpenGLRenderer(private val context: Context) : GLSurfaceView.Renderer {
 
         Matrix.setIdentityM(modelMatrix, 0)
 
-        // 1. вращение системы
+        // вращение системы
         Matrix.rotateM(modelMatrix, 0, globalRotation, 0f, 1f, 0f)
 
-        // 2. Масштаб всей системы
+        // масштаб всей системы
         Matrix.scaleM(modelMatrix, 0, systemScale, systemScale, systemScale)
 
         when (selectedIndex) {
@@ -175,7 +172,7 @@ class OpenGLRenderer(private val context: Context) : GLSurfaceView.Renderer {
                 )
             }
 
-            4 -> { // Луна - особый случай
+            4 -> { // Луна
                 val earth = SolarSystemData.earth
                 val earthIndex = 3
 
