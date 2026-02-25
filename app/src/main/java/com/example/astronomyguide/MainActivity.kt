@@ -20,6 +20,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.astronomyguide.ui.theme.AstronomyGuideTheme
+import com.example.astronomyguide.data.models.SolarSystemData
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -54,10 +55,17 @@ fun MainApp() {
                 NewsScreen()
             }
             composable(Screen.SolarSystem.route) {
-                SolarSystemScreen(navController)  // ← ПЕРЕДАЕМ navController
+                SolarSystemScreen(navController)
             }
-            composable(Screen.MoonDetail.route) {  // ← НОВЫЙ ЭКРАН
+            composable(Screen.MoonDetail.route) {
                 MoonDetailScreen(navController)
+            }
+            // НОВЫЙ: Экран с детальной информацией о планете
+            composable(Screen.PlanetDetail.route) { backStackEntry ->
+                val planetId = backStackEntry.arguments?.getString("planetId")?.toIntOrNull() ?: 0
+                val planet = SolarSystemData.bodies.find { it.id == planetId }
+                    ?: SolarSystemData.bodies[0]
+                PlanetDetailScreen(navController, planet)
             }
         }
     }
@@ -66,7 +74,9 @@ fun MainApp() {
 sealed class Screen(val route: String, val title: String, val icon: ImageVector) {
     object News : Screen("news", "Новости", Icons.Default.Newspaper)
     object SolarSystem : Screen("solarsystem", "Солнечная система", Icons.Default.Public)
-    object MoonDetail : Screen("moon_detail", "Луна", Icons.Default.Info)  // ← НОВЫЙ
+    object MoonDetail : Screen("moon_detail", "Луна", Icons.Default.Info)
+    // НОВЫЙ: Маршрут с параметром planetId
+    object PlanetDetail : Screen("planet_detail/{planetId}", "Планета", Icons.Default.Info)
 }
 
 @Composable
@@ -75,8 +85,11 @@ fun BottomNavigationBar(navController: NavHostController) {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
 
-    // Скрываем BottomBar на экране Луны
-    if (currentRoute == Screen.MoonDetail.route) return
+    // Скрываем BottomBar на экранах деталей
+    if (currentRoute == Screen.MoonDetail.route ||
+        currentRoute?.startsWith("planet_detail") == true) {
+        return
+    }
 
     NavigationBar(
         containerColor = Color(0xFF4A1E6D),

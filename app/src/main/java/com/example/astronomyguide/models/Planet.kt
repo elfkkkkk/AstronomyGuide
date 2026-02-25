@@ -10,5 +10,6 @@ data class Planet(
     val colorRed: Float,
     val colorGreen: Float,
     val colorBlue: Float,
-    val description: String
+    val description: String,
+    val imageResId: Int? = null
 )

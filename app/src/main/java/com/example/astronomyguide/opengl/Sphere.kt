@@ -34,7 +34,6 @@ class Sphere {
     private val vertices: FloatArray
 
     init {
-        // вершины сферы
         vertices = generateSphereVertices(1.0f, 20, 20)
 
         val vb = ByteBuffer.allocateDirect(vertices.size * 4)

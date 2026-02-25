@@ -19,6 +19,10 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.navigation.NavController
 import com.example.astronomyguide.opengl.OpenGLView
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.mutableStateOf
+import com.example.astronomyguide.data.models.SolarSystemData
 
 @Composable
 fun SolarSystemScreen(navController: NavController) {
@@ -89,13 +93,14 @@ fun SolarSystemScreen(navController: NavController) {
             Button(
                 onClick = {
                     val info = openGLRenderer?.getSelectedPlanetInfo() ?: ""
+                    val selectedIndex = openGLRenderer?.getSelectedIndex() ?: 0
+
                     if (info.contains("Луна")) {
-                        // Если выбрана Луна - переходим на 3D экран
                         navController.navigate("moon_detail")
                     } else {
-                        // Иначе показываем обычный диалог
-                        planetInfo = info
-                        showInfoDialog = true
+                        // Получаем выбранную планету и переходим на детальный экран
+                        val selectedPlanet = SolarSystemData.bodies[selectedIndex]
+                        navController.navigate("planet_detail/${selectedPlanet.id}")
                     }
                 },
                 colors = ButtonDefaults.buttonColors(
