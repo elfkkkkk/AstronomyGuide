@@ -31,7 +31,6 @@ fun PlanetDetailScreen(
     val scrollState = rememberScrollState()
     val context = LocalContext.current
 
-    // Логирование для отладки
     LaunchedEffect(planet.id) {
         Log.d("PlanetDetail", "Showing planet: ${planet.name} with id: ${planet.id}")
     }
@@ -41,7 +40,6 @@ fun PlanetDetailScreen(
             .fillMaxSize()
             .verticalScroll(scrollState)
     ) {
-        // Верхняя панель
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -71,7 +69,6 @@ fun PlanetDetailScreen(
             Spacer(modifier = Modifier.size(48.dp))
         }
 
-        // ВРЕМЕННО: для всех планет используем обычные картинки
         Card(
             modifier = Modifier
                 .fillMaxWidth()
@@ -108,7 +105,7 @@ fun PlanetDetailScreen(
                 modifier = Modifier.padding(20.dp)
             ) {
                 Text(
-                    text = "📋 Характеристики",
+                    text = "Характеристики",
                     color = Color(0xFF9D71D3),
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold

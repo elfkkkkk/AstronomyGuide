@@ -56,13 +56,13 @@ object MoonShader {
                 vec3 V = normalize(-vPositionEye);
                 vec3 R = reflect(-L, N);
                 
-                // Ambient
+                // Ambient фоновое освещение
                 float ambient = 0.2;
                 
-                // Diffuse (Ламберт)
+                // Diffuse диффузное освещение
                 float diffuse = max(dot(N, L), 0.0);
                 
-                // Specular (Фонг)
+                // Specular (Фонг) бликовое освещение
                 float specular = 0.0;
                 if (diffuse > 0.0) {
                     specular = pow(max(dot(R, V), 0.0), 32.0);

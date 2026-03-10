@@ -5,7 +5,6 @@ import com.example.astronomyguide.R
 object SolarSystemData {
 
     val bodies = listOf(
-        // 0 - Солнце
         Planet(
             id = 0,
             name = "Солнце",
@@ -19,7 +18,6 @@ object SolarSystemData {
             description = "Солнце\nЗвезда\nДиаметр: 1,391,000 км",
             imageResId = R.drawable.sun
         ),
-        // 1 - Меркурий
         Planet(
             id = 1,
             name = "Меркурий",
@@ -33,7 +31,6 @@ object SolarSystemData {
             description = "Меркурий\nБлижайшая к Солнцу планета\nДиаметр: 4,879 км",
             imageResId = R.drawable.mercury
         ),
-        // 2 - Венера
         Planet(
             id = 2,
             name = "Венера",
@@ -47,7 +44,6 @@ object SolarSystemData {
             description = "Венера\nВторая планета от Солнца\nДиаметр: 12,104 км",
             imageResId = R.drawable.venus
         ),
-        // 3 - Земля
         Planet(
             id = 3,
             name = "Земля",
@@ -61,7 +57,6 @@ object SolarSystemData {
             description = "Земля\nТретья планета\nДиаметр: 12,742 км",
             imageResId = R.drawable.earth
         ),
-        // 4 - Луна
         Planet(
             id = 4,
             name = "Луна",
@@ -75,7 +70,6 @@ object SolarSystemData {
             description = "Луна\nСпутник Земли\nДиаметр: 3,474 км",
             // imageResId = R.drawable.moon
         ),
-        // 5 - Марс
         Planet(
             id = 5,
             name = "Марс",
@@ -89,7 +83,6 @@ object SolarSystemData {
             description = "Марс\nЧетвертая планета\nДиаметр: 6,779 км",
             imageResId = R.drawable.mars
         ),
-        // 6 - Юпитер
         Planet(
             id = 6,
             name = "Юпитер",
@@ -103,7 +96,6 @@ object SolarSystemData {
             description = "Юпитер\nПятая планета\nДиаметр: 139,820 км",
             imageResId = R.drawable.jupiter
         ),
-        // 7 - Сатурн
         Planet(
             id = 7,
             name = "Сатурн",
@@ -117,7 +109,6 @@ object SolarSystemData {
             description = "Сатурн\nШестая планета\nДиаметр: 116,460 км",
             imageResId = R.drawable.saturn
         ),
-        // 8 - Уран
         Planet(
             id = 8,
             name = "Уран",
@@ -131,7 +122,6 @@ object SolarSystemData {
             description = "Уран\nСедьмая планета\nДиаметр: 50,724 км",
             imageResId = R.drawable.uranus
         ),
-        // 9 - Нептун
         Planet(
             id = 9,
             name = "Нептун",
@@ -143,7 +133,7 @@ object SolarSystemData {
             colorGreen = 0.3f,
             colorBlue = 0.8f,
             description = "Нептун\nВосьмая планета\nДиаметр: 49,244 км",
-            imageResId = R.drawable.neptune  // ← Заменим позже на водную гладь
+            imageResId = R.drawable.neptune
         )
     )
 

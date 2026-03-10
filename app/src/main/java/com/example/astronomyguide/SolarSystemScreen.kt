@@ -63,7 +63,6 @@ fun SolarSystemScreen(navController: NavController) {
             )
         }
 
-        // Кнопки управления
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -89,7 +88,6 @@ fun SolarSystemScreen(navController: NavController) {
                 )
             }
 
-            // проверяем, выбрана ли Луна
             Button(
                 onClick = {
                     val info = openGLRenderer?.getSelectedPlanetInfo() ?: ""
@@ -136,7 +134,6 @@ fun SolarSystemScreen(navController: NavController) {
             }
         }
 
-        // Информационная карточка
         Card(
             modifier = Modifier
                 .fillMaxWidth()
@@ -156,7 +153,7 @@ fun SolarSystemScreen(navController: NavController) {
         }
     }
 
-    // Диалог с информацией (для всех планет кроме Луны)
+    // диалог с информацией (для всех планет кроме Луны)
     if (showInfoDialog) {
         AlertDialog(
             onDismissRequest = { showInfoDialog = false },

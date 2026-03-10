@@ -51,7 +51,7 @@ fun MoonDetailScreen(navController: NavController) {
             )
         }
 
-        // 3D View (занимает 70% экрана)
+        // 3D View
         Box(
             modifier = Modifier
                 .fillMaxWidth()

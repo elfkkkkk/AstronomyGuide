@@ -102,7 +102,6 @@ class MoonRenderer : GLSurfaceView.Renderer {
         GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, 0)
         GLES20.glBindBuffer(GLES20.GL_ELEMENT_ARRAY_BUFFER, 0)
 
-        // Проверяем ошибки
         var error: Int
         while (GLES20.glGetError().also { error = it } != GLES20.GL_NO_ERROR) {
             Log.e("MoonRenderer", "glError: $error")

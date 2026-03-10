@@ -19,27 +19,28 @@ class OpenGLRenderer(private val context: Context) : GLSurfaceView.Renderer {
     private lateinit var square: Square
     private lateinit var texturedSphere: TexturedSphere
     private lateinit var selectionCube: Cube
-
+    private lateinit var blackHole: BlackHole
     private val planets = SolarSystemData.bodies
     private var selectedIndex = 0
 
     private var globalRotation = 0f
     private val planetOrbitAngles = FloatArray(10) { 0f }
     private var moonOrbitAngle = 0f
+    private var time = 0f
 
     private val planetTextures = IntArray(10) { 0 }
 
     override fun onSurfaceCreated(gl: GL10?, config: EGLConfig?) {
         GLES20.glClearColor(0.0f, 0.0f, 0.0f, 1.0f)
         GLES20.glEnable(GLES20.GL_DEPTH_TEST)
-
-        // НЕ включаем BLEND для планет - они будут непрозрачными
-        // BLEND нужен только для куба выбора
+        GLES20.glEnable(GLES20.GL_CULL_FACE)
+        GLES20.glCullFace(GLES20.GL_BACK)
         GLES20.glDisable(GLES20.GL_BLEND)
 
         square = Square(context)
         texturedSphere = TexturedSphere()
         selectionCube = Cube()
+        blackHole = BlackHole()
 
         loadTextures()
 
@@ -79,6 +80,7 @@ class OpenGLRenderer(private val context: Context) : GLSurfaceView.Renderer {
     override fun onDrawFrame(gl: GL10?) {
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT or GLES20.GL_DEPTH_BUFFER_BIT)
 
+        time += 0.02f
         globalRotation += 0.5f
         if (globalRotation > 360) globalRotation = 0f
 
@@ -94,11 +96,13 @@ class OpenGLRenderer(private val context: Context) : GLSurfaceView.Renderer {
 
         drawBackground()
 
-        // Для планет BLEND выключен
+        // Черная дыра летит над фоном
+        blackHole.update()
+        blackHole.draw(projectionMatrix, viewMatrix, time)
+
         GLES20.glDisable(GLES20.GL_BLEND)
         drawSolarSystem()
 
-        // Для куба включаем BLEND (он полупрозрачный)
         GLES20.glEnable(GLES20.GL_BLEND)
         GLES20.glBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE_MINUS_SRC_ALPHA)
         drawSelectionCube()
