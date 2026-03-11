@@ -3,6 +3,7 @@ package com.example.astronomyguide.opengl
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.Color
 import android.opengl.GLES20
 import android.opengl.GLUtils
 import android.opengl.Matrix
@@ -11,6 +12,7 @@ import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.nio.FloatBuffer
 import java.nio.ShortBuffer
+import kotlin.math.*
 
 class TexturedSphere {
 
@@ -18,19 +20,39 @@ class TexturedSphere {
         attribute vec4 vPosition;
         attribute vec2 aTexCoord;
         varying vec2 vTexCoord;
+        varying vec3 vPositionWorld;
         uniform mat4 uMVPMatrix;
+        uniform mat4 uModelMatrix;
         void main() {
             gl_Position = uMVPMatrix * vPosition;
             vTexCoord = aTexCoord;
+            vPositionWorld = (uModelMatrix * vPosition).xyz;
         }
     """.trimIndent()
 
     private val fragmentShaderCode = """
-        precision mediump float;
+        precision highp float;
         varying vec2 vTexCoord;
+        varying vec3 vPositionWorld;
         uniform sampler2D uTexture;
+        uniform float uTime;
+        uniform bool uIsNeptune;  // Флаг для Нептуна (водная гладь)
+        
         void main() {
-            gl_FragColor = texture2D(uTexture, vTexCoord);
+            vec2 coord = vTexCoord;
+            
+            if (uIsNeptune) {
+                float wave1 = sin(vPositionWorld.x * 15.0 + uTime * 3.0) * 
+                    cos(vPositionWorld.z * 12.0 + uTime * 2.0) * 0.02;
+                float wave2 = sin(vPositionWorld.y * 20.0 + uTime * 4.0) * 
+                    cos(vPositionWorld.x * 18.0 - uTime * 3.0) * 0.01;
+                
+                coord.x += wave1;
+                coord.y += wave2;
+            }
+            
+            vec4 color = texture2D(uTexture, coord);
+            gl_FragColor = color;
         }
     """.trimIndent()
 
@@ -38,20 +60,29 @@ class TexturedSphere {
     private var positionHandle: Int = 0
     private var texCoordHandle: Int = 0
     private var mvpMatrixHandle: Int = 0
+    private var modelMatrixHandle: Int = 0
     private var textureUniformHandle: Int = 0
+    private var timeHandle: Int = 0
+    private var isNeptuneHandle: Int = 0
 
     private lateinit var vertexBuffer: FloatBuffer
     private lateinit var texCoordBuffer: FloatBuffer
     private lateinit var indexBuffer: ShortBuffer
     private var indexCount = 0
 
-    init {
-        setupBuffers()
+    // Перегрузка конструктора для создания сферы с параметрами
+    constructor() {
+        setupBuffers(1.0f, 48, 48)
         setupShaders()
     }
 
-    private fun setupBuffers() {
-        val (vertices, texCoords, indices) = generateSphereWithIndices(1.0f, 48, 48)
+    constructor(radius: Float, stacks: Int, slices: Int) {
+        setupBuffers(radius, stacks, slices)
+        setupShaders()
+    }
+
+    private fun setupBuffers(radius: Float, stacks: Int, slices: Int) {
+        val (vertices, texCoords, indices) = generateSphereWithIndices(radius, stacks, slices)
         indexCount = indices.size
 
         // Буфер вершин
@@ -144,14 +175,19 @@ class TexturedSphere {
         projectionMatrix: FloatArray,
         viewMatrix: FloatArray,
         modelMatrix: FloatArray,
-        textureId: Int
+        textureId: Int,
+        time: Float = 0f,
+        isNeptune: Boolean = false
     ) {
         GLES20.glUseProgram(program)
 
         positionHandle = GLES20.glGetAttribLocation(program, "vPosition")
         texCoordHandle = GLES20.glGetAttribLocation(program, "aTexCoord")
         mvpMatrixHandle = GLES20.glGetUniformLocation(program, "uMVPMatrix")
+        modelMatrixHandle = GLES20.glGetUniformLocation(program, "uModelMatrix")
         textureUniformHandle = GLES20.glGetUniformLocation(program, "uTexture")
+        timeHandle = GLES20.glGetUniformLocation(program, "uTime")
+        isNeptuneHandle = GLES20.glGetUniformLocation(program, "uIsNeptune")
 
         val mvpMatrix = FloatArray(16)
         val viewProjectionMatrix = FloatArray(16)
@@ -159,6 +195,9 @@ class TexturedSphere {
         Matrix.multiplyMM(mvpMatrix, 0, viewProjectionMatrix, 0, modelMatrix, 0)
 
         GLES20.glUniformMatrix4fv(mvpMatrixHandle, 1, false, mvpMatrix, 0)
+        GLES20.glUniformMatrix4fv(modelMatrixHandle, 1, false, modelMatrix, 0)
+        GLES20.glUniform1f(timeHandle, time)
+        GLES20.glUniform1i(isNeptuneHandle, if (isNeptune) 1 else 0)
 
         // Текстура
         GLES20.glActiveTexture(GLES20.GL_TEXTURE0)
@@ -206,6 +245,50 @@ class TexturedSphere {
             }
 
             return textureHandle[0]
+        }
+
+        fun createWaterTexture(): Int {
+            val size = 1024
+            val bitmap = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
+
+            for (x in 0 until size) {
+                for (y in 0 until size) {
+                    val u = x.toFloat() / size
+                    val v = y.toFloat() / size
+
+                    // паттерн волн
+                    val wave1 = sin(u * 20f * PI.toFloat()) * cos(v * 15f * PI.toFloat())
+                    val wave2 = sin(u * 30f * PI.toFloat() + 2f) * cos(v * 25f * PI.toFloat())
+                    val wave3 = sin(u * 50f * PI.toFloat()) * sin(v * 40f * PI.toFloat())
+
+                    val height = (wave1 * 0.5f + wave2 * 0.3f + wave3 * 0.2f) * 0.5f + 0.5f
+
+                    val red = (0.1f + height * 0.2f).coerceIn(0f, 1f)
+                    val green = (0.3f + height * 0.4f).coerceIn(0f, 1f)
+                    val blue = (0.8f + height * 0.2f).coerceIn(0f, 1f)
+
+                    val color = android.graphics.Color.rgb(
+                        (red * 255).toInt(),
+                        (green * 255).toInt(),
+                        (blue * 255).toInt()
+                    )
+                    bitmap.setPixel(x, y, color)
+                }
+            }
+
+            val textures = IntArray(1)
+            GLES20.glGenTextures(1, textures, 0)
+            GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textures[0])
+
+            GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR)
+            GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR)
+            GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S, GLES20.GL_REPEAT)
+            GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_REPEAT)
+
+            GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, bitmap, 0)
+            bitmap.recycle()
+
+            return textures[0]
         }
     }
 }

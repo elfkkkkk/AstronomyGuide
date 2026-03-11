@@ -19,9 +19,11 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.viewinterop.AndroidView
 import androidx.navigation.NavController
 import com.example.astronomyguide.data.models.Planet
-import android.util.Log
+import com.example.astronomyguide.opengl.NeptuneView
+import com.example.astronomyguide.opengl.WaterSurfaceView  // ← ИМПОРТ
 
 @Composable
 fun PlanetDetailScreen(
@@ -29,17 +31,13 @@ fun PlanetDetailScreen(
     planet: Planet
 ) {
     val scrollState = rememberScrollState()
-    val context = LocalContext.current
-
-    LaunchedEffect(planet.id) {
-        Log.d("PlanetDetail", "Showing planet: ${planet.name} with id: ${planet.id}")
-    }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
             .verticalScroll(scrollState)
     ) {
+        // Верхняя панель
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -69,6 +67,7 @@ fun PlanetDetailScreen(
             Spacer(modifier = Modifier.size(48.dp))
         }
 
+        // ============ ИЗОБРАЖЕНИЕ ============
         Card(
             modifier = Modifier
                 .fillMaxWidth()
@@ -79,15 +78,27 @@ fun PlanetDetailScreen(
                 containerColor = Color(0xFF4A1E6D).copy(alpha = 0.5f)
             )
         ) {
-            planet.imageResId?.let { imageRes ->
-                Image(
-                    painter = painterResource(id = imageRes),
-                    contentDescription = planet.name,
-                    contentScale = ContentScale.Crop,
+            if (planet.id == 9) { // Нептун
+                AndroidView(
+                    factory = { ctx ->
+                        NeptuneView(ctx)
+                    },
                     modifier = Modifier
                         .fillMaxSize()
                         .clip(RoundedCornerShape(16.dp))
                 )
+            } else {
+                // Обычная картинка для остальных планет
+                planet.imageResId?.let { imageRes ->
+                    Image(
+                        painter = painterResource(id = imageRes),
+                        contentDescription = planet.name,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .clip(RoundedCornerShape(16.dp))
+                    )
+                }
             }
         }
 
@@ -105,7 +116,7 @@ fun PlanetDetailScreen(
                 modifier = Modifier.padding(20.dp)
             ) {
                 Text(
-                    text = "Характеристики",
+                    text = "📋 Характеристики",
                     color = Color(0xFF9D71D3),
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold

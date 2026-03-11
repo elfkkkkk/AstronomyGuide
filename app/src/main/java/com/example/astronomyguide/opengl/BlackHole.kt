@@ -25,17 +25,15 @@ class BlackHole {
         uniform float uTime;
         
         void main() {
-            // Центрируем координаты
             vec2 pos = vTexCoord * 2.0 - 1.0;
             float r = length(pos);
             
-            // Если пиксель вне круга - делаем прозрачным
+            // если пиксель вне круга - делаем прозрачным
             if (r > 1.0) {
                 gl_FragColor = vec4(0.0, 0.0, 0.0, 0.0);
                 return;
             }
             
-            // Черный центр (радиус 0.4)
             float center = 1.0 - smoothstep(0.0, 0.4, r);
             
             // Внешнее свечение (от 0.4 до 1.0)
